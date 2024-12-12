@@ -300,7 +300,7 @@ func (t *WinPostTask) Do(taskID harmonytask.TaskID, stillOwned func() bool) (don
 			}
 		}
 
-		log.Infof("Took %d milliseconds to get ready to generate winning post", time.Since(start).Milliseconds())
+		log.Infow("Time taken to get ready to generate winning post", "time in milliseconds", time.Since(start).Milliseconds(), "Sector Challenges", sectorChallenges)
 		start = time.Now()
 
 		wpostProof, err = t.generateWinningPost(ctx, ppt, abi.ActorID(details.SpID), sectorChallenges, prand)
