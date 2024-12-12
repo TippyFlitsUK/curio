@@ -257,6 +257,7 @@ func (t *WinPostTask) Do(taskID harmonytask.TaskID, stillOwned func() bool) (don
 
 	// winning PoSt
 	var wpostProof []prooftypes.PoStProof
+	start := time.Now()
 	{
 		buf := new(bytes.Buffer)
 		if err := maddr.MarshalCBOR(buf); err != nil {
@@ -299,11 +300,16 @@ func (t *WinPostTask) Do(taskID harmonytask.TaskID, stillOwned func() bool) (don
 			}
 		}
 
+		log.Infof("Took %d milliseconds to get ready to generate winning post", time.Since(start).Milliseconds())
+		start = time.Now()
+
 		wpostProof, err = t.generateWinningPost(ctx, ppt, abi.ActorID(details.SpID), sectorChallenges, prand)
 		if err != nil {
 			err = xerrors.Errorf("failed to compute winning post proof: %w", err)
 			return false, err
 		}
+		log.Infof("Took %d milliseconds to generate winning post proof", time.Since(start).Milliseconds())
+		start = time.Now()
 	}
 
 	log.Infow("WinPostTask winning PoSt computed", "tipset", types.LogCids(base.TipSet.Cids()), "miner", maddr, "round", round, "proofs", wpostProof)
@@ -414,6 +420,7 @@ func (t *WinPostTask) Do(taskID harmonytask.TaskID, stillOwned func() bool) (don
 		}
 	}
 
+	log.Infof("Took %d milliseconds to assemble winning post block", time.Since(start).Milliseconds())
 	log.Infow("WinPostTask block ready", "tipset", types.LogCids(base.TipSet.Cids()), "miner", maddr, "round", round, "block", blockMsg.Header.Cid(), "timestamp", blockMsg.Header.Timestamp)
 
 	// persist in db
@@ -484,6 +491,8 @@ func (t *WinPostTask) generateWinningPost(
 
 	vproofs := make([][]byte, len(sectors))
 	eg := errgroup.Group{}
+	log.Infof("Total %d sectors for winning Post challenge", len(sectors))
+	start := time.Now()
 
 	for i, s := range sectors {
 		i, s := i, s
@@ -495,6 +504,8 @@ func (t *WinPostTask) generateWinningPost(
 			if vanilla == nil {
 				return xerrors.Errorf("get winning sector:%d, vanilla is nil", s.SectorNumber)
 			}
+			log.Infof("Took %d milliseconds to generate vanilla proof for sector %d", time.Since(start).Milliseconds(), s.SectorNumber)
+			start = time.Now()
 			vproofs[i] = vanilla
 			return nil
 		})
