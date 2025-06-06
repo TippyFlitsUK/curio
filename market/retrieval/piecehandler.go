@@ -16,6 +16,7 @@ import (
 
 	"github.com/filecoin-project/curio/lib/cachedreader"
 	"github.com/filecoin-project/curio/market/retrieval/remoteblockstore"
+	"github.com/filecoin-project/curio/pdp"
 )
 
 // For data served by the endpoints in the HTTP server that never changes
@@ -58,6 +59,11 @@ func (rp *Provider) handleByPieceCid(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		stats.Record(ctx, remoteblockstore.HttpPieceByCid500ResponseCount.M(1))
 		return
+	}
+
+	// Record PDP metrics if this is a PDP piece
+	if pdp.IsPDPPiece(ctx, rp.db, pieceCid.String()) {
+		pdp.RecordPDPPieceAccess(ctx, r, int64(size))
 	}
 
 	buf := make([]byte, 512)
