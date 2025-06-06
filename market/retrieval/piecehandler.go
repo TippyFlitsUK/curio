@@ -62,7 +62,10 @@ func (rp *Provider) handleByPieceCid(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Record PDP metrics if this is a PDP piece
-	if pdp.IsPDPPiece(ctx, rp.db, pieceCid.String()) {
+	isPDP := pdp.IsPDPPiece(ctx, rp.db, pieceCid.String())
+	log.Infof("Piece %s: isPDP=%v, size=%d", pieceCid.String(), isPDP, size)
+	if isPDP {
+		log.Infof("Recording PDP metrics for piece %s", pieceCid.String())
 		pdp.RecordPDPPieceAccess(ctx, r, int64(size))
 	}
 
