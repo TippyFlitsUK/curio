@@ -1184,3 +1184,4 @@ type PDPProofSetSubrootDetail struct {
 	SubrootOffset int64  `json:"subrootOffset"`
 	PieceCID      string `json:"pieceCid"`
 }
+
