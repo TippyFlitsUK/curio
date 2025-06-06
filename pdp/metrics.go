@@ -133,11 +133,12 @@ func RecordPDPPieceAccess(ctx context.Context, r *http.Request, pieceSize int64)
 // IsPDPPiece checks if a piece CID corresponds to a PDP piece by checking the database
 // This function can be used by the retrieval system to identify PDP pieces
 func IsPDPPiece(ctx context.Context, db interface{}, pieceCID string) bool {
-	// We need to define an interface that matches harmonydb.DB methods we need
+	// Define interface matching harmonydb.DB
+	type Row interface {
+		Scan(dest ...interface{}) error
+	}
 	type querier interface {
-		QueryRow(ctx context.Context, sql string, args ...interface{}) interface {
-			Scan(dest ...interface{}) error
-		}
+		QueryRow(ctx context.Context, sql string, args ...interface{}) Row
 	}
 
 	q, ok := db.(querier)
