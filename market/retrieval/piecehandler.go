@@ -61,13 +61,9 @@ func (rp *Provider) handleByPieceCid(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Record PDP metrics if this is a PDP piece
-	isPDP := pdp.IsPDPPiece(ctx, rp.db, pieceCid.String())
-	log.Infof("Piece %s: isPDP=%v, size=%d", pieceCid.String(), isPDP, size)
-	if isPDP {
-		log.Infof("Recording PDP metrics for piece %s", pieceCid.String())
-		pdp.RecordPDPPieceAccess(ctx, r, int64(size))
-	}
+	// Record retrieval metrics for all pieces
+	log.Infof("Recording retrieval metrics for piece %s, size=%d", pieceCid.String(), size)
+	pdp.RecordPDPPieceAccess(ctx, r, int64(size))
 
 	buf := make([]byte, 512)
 	n, _ := reader.Read(buf)
