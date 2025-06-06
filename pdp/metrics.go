@@ -147,8 +147,10 @@ func IsPDPPiece(ctx context.Context, db interface{}, pieceCID string) bool {
 
 	var count int
 	err := q.QueryRow(ctx, `
-		SELECT 1 FROM parked_pieces 
-		WHERE piece_cid = $1 AND long_term = TRUE AND complete = TRUE
+		SELECT 1 FROM parked_pieces pp
+		JOIN parked_piece_refs ppr ON ppr.piece_id = pp.id
+		JOIN pdp_piecerefs pdpr ON pdpr.piece_ref = ppr.ref_id
+		WHERE pp.piece_cid = $1 AND pp.complete = TRUE
 		LIMIT 1
 	`, pieceCID).Scan(&count)
 
